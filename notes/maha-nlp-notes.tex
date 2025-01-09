@@ -4,15 +4,33 @@
 \input{macros}
 \input{letterfonts}
 
-\title{\textsf{ \huge INTRODUCTION TO} \\\huge{{\bf NATURAL LANGUAGE PROCESSING}}\\\textsf{\large CLASS NOTES}}
-\author{\huge{\bf \texttt{ Mahanth Yalla}}\\ \texttt{\large M. Tech-AI, IISc}} 
+\usepackage{graphicx} % For including images
+
+\title{
+    \vspace{-2cm} % Adjust this for spacing above the logo
+    \includegraphics[width=8cm]{iisc-logo.png}\\ % Path to IISc logo
+    \vspace{1cm} % Spacing between logo and title
+    \textsf{\huge INTRODUCTION TO}\\
+    {\huge \textbf{NATURAL LANGUAGE PROCESSING}}\\
+    \vspace{0.5cm} % Spacing between title and subtitle
+    \textsf{\large CLASS NOTES}
+}
+\author{\LARGE{\textbf{\texttt{Mahanth Yalla}}}\\ \texttt{\large M. Tech-AI, IISc}} 
 \date{}
 
 \begin{document}
-\maketitle
+\pagenumbering{gobble}
+% Title Page
+\begin{titlepage}
+    \centering
+    \maketitle
+\end{titlepage}
+
+% Table of Contents
 \newpage
 \pdfbookmark[section]{\contentsname}{toc}
 
+% Preface Section
 \section*{Preface}
 These notes are based on the lectures delivered by {\bf Prof. Danish Pruthi} in the course {\bf DS 207 - Introduction to Natural Language Processing} 
 at Indian Institute of Science (IISc) Bengaluru - Jan Semester 2025. 
@@ -22,7 +40,7 @@ The notes are written in \LaTeX\ .
 \section*{Disclaimer}
 These notes are not official and may contain errors. Please refer to the official course material for accurate information.
 
-\textit{"I cannot guranatee the correctness of these notes. Please use them at your own risk".}
+\textit{"I cannot guarantee the correctness of these notes. Please use them at your own risk".}
 
 \hfill- Mahanth Yalla 
 
@@ -34,9 +52,11 @@ If you have any feedback or suggestions on the notes, please feel free to reach 
 \vfill
 {\bf Acknowledgements:} I would like to thank Prof. Danish Pruthi for delivering the lectures and providing the course material. I would also like to thank the TAs for their help and support.
 
-
 \tableofcontents
 \pagebreak
+\pagenumbering{arabic} 
+\input{lec01/lec_01_TextClassification.tex}
+\input{lec02/lec_02_WordRepresentations.tex}
 
 
 \end{document}
