@@ -1,0 +1,268 @@
+% !TEX root=./../maha-nlp-notes.tex
+\chapter{Text Classification}
+\section{Introduction}
+
+Text classification is a supervised learning task where the goal is to assign a label to a given text. 
+The text can be a document, a sentence, or a paragraph. The labels can be binary or multi-class. 
+Text classification is a fundamental task in natural language processing (NLP) and has many applications such as spam detection, sentiment analysis, topic classification, etc.
+
+
+\section{Pre - Distributions}
+\subsection{Bernoulli Distribution}
+
+The Bernoulli distribution is a discrete probability distribution that models the probability of success of a binary outcome.
+
+\[   
+\text{Bernoulli}(p) = 
+     \begin{cases}
+       \text{sucess,} & \text{with probability } p \\
+	   \text{failure,} & \text{with probability } 1 - p
+     \end{cases}
+\]
+
+Lets consider a case when we repeated for n trails of Bernoulli with probability of success being $p$, and if we observed $x$ wins and $n-x$ losses, 
+then Bernoulli distribution is given by
+$$
+\text{Bernoulli}(p ; n, x) = p^x (1 - p)^{n - x} 
+$$
+
+\qs{}{Now what value of $p$ should we choose to maximize the likelihood of the data?}
+\sol 
+We can formualte this into an optimization problem as 
+\[
+	\text{arg} \max_p \text{Bernoulli}(p ; n, x) = p^x (1 - p)^{n - x} 
+\]
+
+we can rule out p = 1 and p = 0 from the above equation, p \(\in (0,1) \)
+
+\begin{align*}
+	\nabla_p \text{Bernoulli}(p ; n, x) & = 0 \\
+	{\frac{\partial}{\partial p}}(p^{x}\left(1-p\right)^{n-x}) & = 0 \\
+	p^{x-1}\left(x-n\,p\right)\left(1-p\right)^{n-x-1} &= 0\\
+	x & = np \quad \quad (\because p \neq 0, p \neq 1) \\
+	p & = \frac{x}{n}
+\end{align*}
+
+Hence the value of p that maximizes the likelihood of the data is \( \frac{x}{n} \) 
+
+\ex{Bernoulli Distribution}{
+	\label{bernoulli}{\bf A coin is tossed 10 times and it lands heads 7 times.}\\
+	
+Then the probability that maximizes the likelihood of the data is \(\frac{7}{10}\)
+} 
+
+\subsection{Categorial Distribution}
+similar to Bernoulli distribution, Categorial distribution is a generalization of Bernoulli distribution.
+
+
+\noindent Say we have N possible outcomes, then the probability of each outcome is given by $p_1, p_2, \cdots, p_N$ such that $\sum_{i=1}^{N} p_i = 1$.
+
+we can estimate the probability of each outcome by counting the number of times each outcome occurs and dividing by the total number of outcomes.
+
+\subsection{Binomial Distribution}
+The binomial distribution is a generalization of the Bernoulli distribution.
+\[
+\text{Binomial}(k ; n, p) = \binom{n}{k} p^k (1 - p)^{n - k}
+\]
+
+
+\subsection{Multinomial Distribution}
+
+The multinomial distribution is a generalization of the binomial distribution to more than two categories. (vaguely speaking, Binomial + Categorical = Multinomial). 
+
+
+\section{Text (Topic) Classification}
+
+\subsection{Problem Statement}
+Given a text document, the goal is to assign a label to the document. The labels can be binary or multi-class.
+
+
+\subsection{Example Data}
+
+{\bf Binary (2 - Class) Classification Dataset :}
+\begin{center}
+	\centering
+	\begin{tabular}{|l|c|}
+		\hline
+		\textbf{Text} & \textbf{Label} \\
+		\hline
+		I love this movie & Positive \\
+		\hline
+		I hate this movie & Negative \\
+		\hline
+		I like this movie & Positive \\
+		\hline
+		I dislike this movie & Negative \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\noindent {\bf M - Class Classification Dataset :}
+\begin{center}
+	\centering
+	\begin{tabular}{|l|c|}
+		\hline
+		\textbf{Text} & \textbf{Label} \\
+		\hline
+		Kohli scores another century & Sports \\
+		\hline 
+		Scam in the banking sector & Finance \\
+		\hline
+		India wins the match & Sports \\
+		\hline 
+		Amitab Bachan praises Allu Arjun for his performance & Entertainment \\
+		\hline
+		Stock market crashes & Finance \\
+		\hline
+		He announces a metro project & Politics \\
+		\hline
+		Pushpa 2 is an Industry hit & Entertainment \\
+		\hline
+		Pawan Kalyan to contest in the upcoming elections & Politics \\
+		\hline
+		SS Rajamouli comes from Dubai to vote & Politics \\
+		\hline
+	\end{tabular}
+\end{center}
+
+\subsection{Modeling data distribution}
+
+Joint probability of the text (X) and the label (y) is given by 
+
+\[
+	f_{X,Y}(x,y) = f_{Y|X}(y|x) f_X(x) = f_{X|Y}(x|y) f_Y(y)
+\]
+
+\ex{M class classification }{
+	\label{mclass}{\bf Consider the M class classification dataset from above.}\\
+	
+	Then the joint probability of the text and the label is given by 
+	\[
+		f_{X,Y}(x = \text{"Amitab Bachan praises Allu Arjun for his performance"},y=\text{"Entertainment"}) = 0.7654 \quad \text{(say)}
+	\]
+	similarly,
+	\begin{align*}
+		f_{X,Y}(x = \text{"Amitab Bachan praises Allu Arjun for his performance"},y=\text{"Politics"}) &= 0.1544 \quad \text{(say)}\\
+		f_{X,Y}(x = \text{"Amitab Bachan praises Allu Arjun for his performance"},y=\text{"Cricket"}) &= 0.0023 \quad \text{(say)}\\
+		f_{X,Y}(x = \text{"Amitab Bachan praises Allu Arjun for his performance"},y=\text{"Politics"}) &= 0.0779 \quad \text{(say)}
+	\end{align*}
+}
+
+\section{Naive Bayes Classifier}
+{\bf Assumption}: The features are IIDs (Independent and Identically Distributed).
+
+\noindent Hence the joint probability of the text and the label is given by
+\[
+	f_{X,Y}(x,y) = \prod_{i=1}^{n} f_{X_i,Y}(x_i,y)
+\]
+where, n is the number of examples in the dataset. 
+
+\thm{Bayes Theorem}{
+Bayes' theorem is stated mathematically as the following equation:
+\[
+	P(y|x) = \frac{P(x|y)P(y)}{P(x)} = \frac{P(x|y)P(y)}{\sum_{y} P(x|y)P(y)}
+\]
+similarly, for continuous random variables, the theorem is stated as:
+$$f_{X|Y=y}(x)={\frac{f_{Y|X=x}(y)f_{X}(x)}{f_{Y}(y)}}.$$
+}
+
+\subsection{Generative Naive Bayes Classifier}
+As we assumed IIDs, then joint probability of the text and the label is given by
+$$
+	P(X_i|y_k) =  \prod_{j=1}^{m} P(X_{ij}| y_k)
+$$
+\noindent where,
+
+$X_{ij}$ is the $j^{th}$ word of the $i^{th}$ example and,
+
+$m$ is the number of words in the text.\\
+
+\noindent Now, using bayes theorem, we can write the probability of the label$(y_k)$ given the text $(X_i)$ as 
+$$
+	P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)} = \frac{P(y_k) \prod_{j=1}^{m} P(X_{ij}| y_k)}{P(X)}
+$$
+\nt{
+	\begin{itemize}
+		\item $\displaystyle P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)}$ is inferred as $ \displaystyle  \text{posteriror} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}}$
+		\item The denominator $P(X)$ (i.e, {\it evidence})is constant for all the classes, hence we can ignore it while calculating the probability of the label given the text.
+		\item The probability of the label given the text is proportional to the product of the probabilities of the features given the label.
+	\end{itemize}
+}
+
+\vspace{0.5cm}
+\noindent Thus the probability of the label given the text is given by
+$$
+	P(y_k|X) \propto P(y_k) \prod_{j=1}^{m} P(X_{ij}| y_k)
+$$
+\noindent where, 
+
+$P(y_k)$ is the prior probability of the label $y_k$ and,
+
+$P(X_{ij}| y_k)$ is the likelihood of the word $X_{ij}$ given the label $y_k$.
+
+\ex{Consider the binary classification dataset from above}{
+	Then the probability of the label given the text is given by
+	\begin{align*}
+		P(\text{Positive}|\text{"I love this movie"}) & \propto P(\text{Positive}) \times \sum_{\text{words} \in \text{text}}P(\text{word}_i|\text{Positive}) \\
+		P(\text{Negative}|\text{"I love this movie"}) & \propto P(\text{Negative}) \times \sum_{\text{words} \in \text{text}}P(\text{word}_i|\text{Negative})
+	\end{align*}
+
+	\noindent for postive class,
+	\begin{align*}
+		P(\text{Positive}|\text{"I love this movie"}) \propto & P(\text{Positive}) \times P(\text{"I"}|\text{Positive}) \\
+		& \times P(\text{"love"}|\text{Positive}) \times P(\text{"this"}|\text{Positive}) \times P(\text{"movie"}|\text{Positive})
+	\end{align*}
+}
+
+\subsection{Generative Naive Bayes}
+\nt{Implementation done in notebook}
+\begin{algorithm}[H]
+	\SetAlgoLined
+	\SetNoFillComment
+	word $ \leftarrow $ "" \\
+	\ForEach{k in 1..N} {
+		$y_k \leftarrow \text{Categorial}(\mu)$ \\
+		$\text{word += Multinomial}(\theta_{y_k})$ \\
+	}
+	words = word.concat() \\
+	\Return words \\
+	\caption{Generative Naive Bayes}
+\end{algorithm}
+
+\subsection{Estimation of the parameters}
+parameters :
+\begin{itemize}
+	\item $\mu$ : prior probability of the label
+	$$\mu = \frac{\text{number of examples with label } y_k}{\text{total number of examples}} = P(y_k) $$
+	\item $\theta_{y_k}$ : likelihood of the word given the label
+	$$\theta_{y_k} = \frac{\text{number of times word } w_i \text{ occurs in examples with label } y_k}{\text{total number of words in examples with label } y_k} = = P(X_ij, y_k) $$
+\end{itemize}
+
+$$
+\text{parameters} = |\mu| + |\theta_{y_k}| = k + k \times \mathbb{v}
+$$
+\noindent where,
+
+$k$ is the number of categories [a.k.a classes] and,
+
+$\mathbb{v}$ is the number of unique words in the dataset [a.k.a vocab size].
+
+
+\noindent $\text{parameters} = O(k \mathbb{v})$
+
+\subsection{Inference in Naive Bayes}
+\begin{itemize}
+	\item Given a text, calculate the probability of the label given the text using the generative Naive Bayes model.
+	\item Assign the label with the highest probability to the text.
+		$$
+		\hat{y} = \text{arg} \max_{y_k} P(y_k|X)
+		$$
+		where, $\hat{y}$ is the predicted label, $X$ is the text, $y_k$ is the label and, $ \displaystyle P(y_k | X) = P(y_k) \Pi_{j = 1}^{m} P(X_{ij} | y_k)$
+	\item {\bf UNKNOWN words :} If the probability of the label given the text is less than a threshold, then assign the label as "Unknown".
+	\item {\bf Smoothing :} Add a small value ($\alpha > 0$) to the likelihood to avoid zero probabilities and Normalize. 
+	\item The threshold can be set based on the validation set and Unknown can be used for unseen words as well.
+\end{itemize}
+
+
+
+
