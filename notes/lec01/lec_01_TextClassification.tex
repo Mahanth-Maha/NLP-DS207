@@ -1,11 +1,11 @@
 % !TEX root=./../maha-nlp-notes.tex
 \chapter{Text Classification}
+
 \section{Introduction}
 
 Text classification is a supervised learning task where the goal is to assign a label to a given text. 
 The text can be a document, a sentence, or a paragraph. The labels can be binary or multi-class. 
 Text classification is a fundamental task in natural language processing (NLP) and has many applications such as spam detection, sentiment analysis, topic classification, etc.
-
 
 \section{Pre - Distributions}
 \subsection{Bernoulli Distribution}
@@ -69,7 +69,6 @@ The binomial distribution is a generalization of the Bernoulli distribution.
 \subsection{Multinomial Distribution}
 
 The multinomial distribution is a generalization of the binomial distribution to more than two categories. (vaguely speaking, Binomial + Categorical = Multinomial). 
-
 
 \section{Text (Topic) Classification}
 
@@ -151,11 +150,11 @@ Joint probability of the text (X) and the label (y) is given by
 \section{Naive Bayes Classifier}
 {\bf Assumption}: The features are IIDs (Independent and Identically Distributed).
 
-\noindent Hence the joint probability of the text and the label is given by
+\noindent Hence the joint probability of the text (words $x_i$) and the label is given by
 \[
-	f_{X,Y}(x,y) = \prod_{i=1}^{n} f_{X_i,Y}(x_i,y)
+	f_{X,Y}(x,y) = \prod_{i=1}^{N} f_{X_i,Y}(x_i,y)
 \]
-where, n is the number of examples in the dataset. 
+where, N is the number of examples in the dataset. 
 
 \thm{Bayes Theorem}{
 Bayes' theorem is stated mathematically as the following equation:
@@ -167,32 +166,58 @@ $$f_{X|Y=y}(x)={\frac{f_{Y|X=x}(y)f_{X}(x)}{f_{Y}(y)}}.$$
 }
 
 \subsection{Generative Naive Bayes Classifier}
-As we assumed IIDs, then joint probability of the text and the label is given by
+Using Naive Bayes Classifier, we can model the {\bf joint probability} (Generative Model) of the text and the label.
+The joint probability of the text and the label is given by
 $$
-	P(X_i|y_k) =  \prod_{j=1}^{m} P(X_{ij}| y_k)
+	P(X,y) = P(X|y)P(y)
+$$
+
+\noindent since we assumed iids, we can write the probability of the text given the label as
+$$
+	P(X_i|y_k) =  \prod_{j=1}^{m_i} P(X_{ij}| y_k)
 $$
 \noindent where,
 
 $X_{ij}$ is the $j^{th}$ word of the $i^{th}$ example and,
 
-$m$ is the number of words in the text.\\
+$m_i$ is the number of words in $X_i$.\\
 
-\noindent Now, using bayes theorem, we can write the probability of the label$(y_k)$ given the text $(X_i)$ as 
+\noindent Thus, 
 $$
-	P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)} = \frac{P(y_k) \prod_{j=1}^{m} P(X_{ij}| y_k)}{P(X)}
+	P(X,y) = P(y_k) \prod_{j=1}^{m_i} P(X_{ij}| y_k)
+$$
+
+We can estimate the parameters of the model using the training data and use the model to predict the label of the text.
+As,
+\begin{itemize}
+	\item $P(y_k)$ is the prior probability of the label $y_k$ 
+	$$ 
+		P(y_k) = \frac{\text{number of examples with label} y_k}{\text{total number of examples}}
+	$$
+	\item $P(X_{ij}| y_k)$ is the likelihood of the word $X_{ij}$ given the label $y_k$
+	$$
+		P(X_{ij}| y_k) = \frac{\text{number of times word } w_i \text{ occurs in examples with label } y_k}{\text{total number of words in examples with label } y_k}
+	$$
+\end{itemize}
+
+\noindent\textbf{Inference:}
+
+Now, using bayes theorem, we can write the probability of the label$(y_k)$ given the text $(X_i)$ as 
+$$
+	P(y_k|X_i) = \frac{P(X_i|y_k)P(y_k)}{P(X_i)} = \frac{P(y_k) \prod_{j=1}^{m_i} P(X_{ij}| y_k)}{P(X_i)}
 $$
 \nt{
 	\begin{itemize}
-		\item $\displaystyle P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)}$ is inferred as $ \displaystyle  \text{posteriror} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}}$
-		\item The denominator $P(X)$ (i.e, {\it evidence})is constant for all the classes, hence we can ignore it while calculating the probability of the label given the text.
-		\item The probability of the label given the text is proportional to the product of the probabilities of the features given the label.
+		\item $\displaystyle P(y|X) = \frac{P(X|y)P(y)}{P(X)}$ is inferred as $ \displaystyle  \text{posteriror} = \frac{\text{likelihood} \times \text{prior}}{\text{evidence}}$
+		\item The denominator $P(X)$ (i.e, {\it evidence}) is constant for all the classes, hence we can ignore it while calculating the probability of the label given the text.
+		\item Thus, The probability of the label given the text is proportional to the product of the probabilities of the features given the label.
 	\end{itemize}
 }
 
 \vspace{0.5cm}
-\noindent Thus the probability of the label given the text is given by
+\noindent Thus, the probability of the label given the text is given by
 $$
-	P(y_k|X) \propto P(y_k) \prod_{j=1}^{m} P(X_{ij}| y_k)
+	P(y_k|X_i) \propto P(y_k) \prod_{j=1}^{m_i} P(X_{ij}| y_k)
 $$
 \noindent where, 
 
@@ -203,8 +228,8 @@ $P(X_{ij}| y_k)$ is the likelihood of the word $X_{ij}$ given the label $y_k$.
 \ex{Consider the binary classification dataset from above}{
 	Then the probability of the label given the text is given by
 	\begin{align*}
-		P(\text{Positive}|\text{"I love this movie"}) & \propto P(\text{Positive}) \times \sum_{\text{words} \in \text{text}}P(\text{word}_i|\text{Positive}) \\
-		P(\text{Negative}|\text{"I love this movie"}) & \propto P(\text{Negative}) \times \sum_{\text{words} \in \text{text}}P(\text{word}_i|\text{Negative})
+		P(\text{Positive}|\text{"I love this movie"}) & \propto P(\text{Positive}) \times \prod_{\text{words} \in \text{text}}P(\text{word}_i|\text{Positive}) \\
+		P(\text{Negative}|\text{"I love this movie"}) & \propto P(\text{Negative}) \times \prod_{\text{words} \in \text{text}}P(\text{word}_i|\text{Negative})
 	\end{align*}
 
 	\noindent for postive class,
@@ -214,7 +239,7 @@ $P(X_{ij}| y_k)$ is the likelihood of the word $X_{ij}$ given the label $y_k$.
 	\end{align*}
 }
 
-\subsection{Generative Naive Bayes}
+\subsection*{Generating Samples using Generative Naive Bayes}
 \nt{Implementation done in notebook}
 \begin{algorithm}[H]
 	\SetAlgoLined
@@ -229,40 +254,153 @@ $P(X_{ij}| y_k)$ is the likelihood of the word $X_{ij}$ given the label $y_k$.
 	\caption{Generative Naive Bayes}
 \end{algorithm}
 
-\subsection{Estimation of the parameters}
+\subsection*{Estimation of the parameters}
 parameters :
 \begin{itemize}
 	\item $\mu$ : prior probability of the label
 	$$\mu = \frac{\text{number of examples with label } y_k}{\text{total number of examples}} = P(y_k) $$
 	\item $\theta_{y_k}$ : likelihood of the word given the label
-	$$\theta_{y_k} = \frac{\text{number of times word } w_i \text{ occurs in examples with label } y_k}{\text{total number of words in examples with label } y_k} = = P(X_ij, y_k) $$
+	$$\theta_{y_k} = \frac{\text{number of times word } w_i \text{ occurs in examples with label } y_k}{\text{total number of words in examples with label } y_k} = P(X_{ij}, y_k) $$
 \end{itemize}
 
-$$
-\text{parameters} = |\mu| + |\theta_{y_k}| = k + k \times \mathbb{v}
-$$
+\begin{align*}
+	\text{parameters} &= |\mu| + |\theta_{y_k}| \\
+	&= \mathbb{k} + \mathbb{k} \times \mathbb{v}
+\end{align*}
+
 \noindent where,
 
-$k$ is the number of categories [a.k.a classes] and,
+$\mathbb{k}$ is the number of categories [a.k.a classes] and,
 
 $\mathbb{v}$ is the number of unique words in the dataset [a.k.a vocab size].
 
+\vspace{0.5cm}
 
-\noindent $\text{parameters} = O(k \mathbb{v})$
+$\textbf{parameters} = O(\mathbb{k} \mathbb{v})$
 
-\subsection{Inference in Naive Bayes}
-\begin{itemize}
-	\item Given a text, calculate the probability of the label given the text using the generative Naive Bayes model.
-	\item Assign the label with the highest probability to the text.
-		$$
+\vspace{0.5cm}
+
+
+\subsection{Discriminative Naive Bayes Classifier}
+In the discriminative model, we directly model the {\bf conditional probability} of the label given the text, avoiding the need to model the joint probability of the text and the label.
+
+$$
+	P(y_k|X_i) \propto P(y_k) \prod_{j=1}^{m_i} P(X_{ij}| y_k) 
+$$
+
+treating $P(y_k|X_i)$ as primary object, we optimise the parameters of the model to maximize the likelihood of the data.
+
+\noindent {\bf Loss Function :} Negative Log Likelihood
+
+$$
+	\mathcal{L(\theta)} = - \sum_{i=1}^{N} \log P(y_k|X_i) = - \sum_{i=1}^{N} \log P(y_k) + \sum_{i=1}^{N} \sum_{j=1}^{m_i} \log P(X_{ij}| y_k)
+$$
+
+\noindent {\bf Optimization :} Gradient Descent
+$$
+	\theta_{k+1} = \theta_k - \alpha \nabla_{\theta} \mathcal{L}(\theta) 
+$$
+
+\subsection*{Inference in Discriminative Naive Bayes}
+Given a text, calculate the probability of the label given the text using the generative Naive Bayes model.
+Assign the label with the highest probability to the text.
+	$$
 		\hat{y} = \text{arg} \max_{y_k} P(y_k|X)
-		$$
-		where, $\hat{y}$ is the predicted label, $X$ is the text, $y_k$ is the label and, $ \displaystyle P(y_k | X) = P(y_k) \Pi_{j = 1}^{m} P(X_{ij} | y_k)$
+	$$
+	where, $\hat{y}$ is the predicted label, $X$ is the text, $y_k$ is the label and, $ \displaystyle P(y_k | X) = P(y_k) \Pi_{j = 1}^{m} P(X_{ij} | y_k)$
+\vspace{0.5cm}
+\noindent Some of the modifications that can be done to the Naive Bayes model are:
+\begin{itemize}
 	\item {\bf UNKNOWN words :} If the probability of the label given the text is less than a threshold, then assign the label as "Unknown".
 	\item {\bf Smoothing :} Add a small value ($\alpha > 0$) to the likelihood to avoid zero probabilities and Normalize. 
-	\item The threshold can be set based on the validation set and Unknown can be used for unseen words as well.
+	\item {\bf Threshold : } A threshold can be set based on the validation set and Unknown can be used for unseen words as well.
 \end{itemize}
 
+\subsection{Implementation of Naive Bayes}
+\begin{algorithm}[H]
+	\KwIn{X,y,$\alpha$}
+	\KwOut{$ \log \mu, \log \theta$}
+	\SetAlgoLined
+	\SetNoFillComment
+	$\mu \leftarrow \text{zeros}(\mathbb{k})$ \\
+	$\theta \leftarrow \text{zeros}(\mathbb{k}, \mathbb{v})$ \\
+	\ForEach{example in X} {
+		\ForEach{word in example} {
+			$\theta[y_k][word] \leftarrow \theta[y_k][word] + 1$ \\
+		}
+		$\mu[y_k] \leftarrow \mu[y_k] + 1$ \\
+	}
+	\ForEach{$y_k$ in $y$} {
+	$\mu[y_k] \leftarrow \mu[y_k] / \sum_{y_k} \mu[y_k]$ \\
+	}
+	\ForEach{$y_k$ in $y$} {
+		\ForEach{word in $\theta[y_k]$} {
+			$\theta[y_k][word] \leftarrow (\theta[y_k][word] + \alpha) / (\sum_{word} \theta[y_k][word] + \alpha \times \mathbb{v})$ \\
+		}
+	}
+	\Return $\log \mu, \log \theta$ \\
+	\caption{Naive Bayes Classifier}
+	\label{algo:naiveBayesFit}
+\end{algorithm}	
+
+\begin{algorithm}[H]
+	\KwIn{X,$ \log \mu, \log \theta$}
+	\KwOut{y}
+	\SetAlgoLined
+	\SetNoFillComment
+	\ForEach{example in X} {
+		\ForEach{label in y} {
+			$P \leftarrow \log \mu[y_k]$ \\
+			\ForEach{word in example} {
+				$P \leftarrow P + \log \theta[y_k][word]$ \\
+			}
+			$P_{y_k} \leftarrow P$ \\
+		}
+		$y \leftarrow \text{arg} \max_{y_k} P_{y_k}$ \\
+	}
+	\Return y \\
+	\caption{Naive Bayes Predict}
+	\label{algo:naiveBayesPredict}
+\end{algorithm}	
+
+\nt{Implementation of Naive Bayes is done in the notebook.
+\begin{itemize}
+	\item Train Accuracy : 0.9362 
+	\item  Test Accuracy : 0.6210
+\end{itemize}
+which implies the Naive Bayes model is over fitting the training data or the data is insufficient to generalize.
+}
+
+{The Algorithm \ref{algo:naiveBayesFit} (Naive Bayes Fit) and Algorithm \ref{algo:naiveBayesPredict} (Naive Bayes Predict) are implemented in the python file {\bf naiveBayes.py}.
+
+The Naive Bayes model is trained on the twitter training data and achieved a score of {\bf 0.6632} on test data, which is when same compared to sklearn's Implementation {\it (details in notebook) }}.
+
+
+\section{Generative vs Discriminative Model}
+
+To summarize, the difference between the generative and discriminative model is given below:
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|c|c|}
+		\hline
+		\textbf{Generative Model} & \textbf{Discriminative Model} \\
+		\hline
+		Model the joint probability & Model the conditional probability \\
+		$P(X,Y) = P(X|Y)P(Y)$ & $P(Y|X) = P(X|Y)P(Y)$ \\
+		\hline
+		Assumes the features are IIDs & Does not assume the features are IIDs \\
+		\hline
+		Learns $P(X|y)$ and $P(y)$ separately & learns $P(X,y)$ directly by optimization \\
+		\hline
+		{\it Use : } Can generative new samples & {\it Use : } Can discriminate samples \\
+		\hline
+		More complex  & Less complex \\
+		(Eg. Naive Bayes) & (Eg. Logistic Regression) \\
+		\hline
+	\end{tabular}
+	\caption{Generative vs Discriminative Model}
+\end{table}
 
 
 
