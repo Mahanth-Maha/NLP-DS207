@@ -1,0 +1,248 @@
+% !TEX root=./../maha-nlp-notes.tex
+\chapter{Word Representations}
+
+\section{Introduction}
+
+Words are the basic building blocks of any language, and are the smallest unit of meaning. Words are represented in the form of {\bf vectors} in NLP. Word representations are used in various NLP tasks like text classification, machine translation, sentiment analysis, etc.
+
+\section{Word2vec - Skip-gram model}
+The Word2vec model is a popular model used for learning word embeddings, published in NIPS 2013 paper by Mikolov et al.\cite{mikolov2013efficientestimationwordrepresentations} \cite{NIPS2013_9aa42b31}
+
+Word2vec is a shallow neural network model that is trained to reconstruct linguistic contexts of words. Word2vec is trained on a large corpus of text data and learns to predict the context of a word given its neighboring words. Word2vec is trained using two algorithms:
+
+\noindent {\bf Key idea:}
+\begin{itemize}
+    \item grouping similar words,
+    \item Use a large corpus of text 
+    \item For center word  and context ("outside") words be  
+    \item Use the similarity of word vectors  and  to compute the probability of the word being used in the context (and vice versa)  
+    \item Keep adjusting (aka learning) the word vectors to optimize the probability
+\end{itemize}
+
+\subsection{Skip-gram model}
+
+The Skip-gram model is trained to predict the context words given a center word. \\
+
+\noindent {\bf Likelihood :} 
+\begin{align*}
+    \textrm{L}(\theta) &= \prod_{t = 1}^{T} P( \text{context} | \text{center}; \theta) \\
+    &= \prod_{t = 1}^{T} \prod_{-m \leq j \leq m, j \neq 0} P(w_{t+j} | w_t; \theta)
+\end{align*}
+
+we can learn the parameters $\theta$ by minimizing the loss, ie maximizing the likelihood of the context words given the center words.\\
+
+\noindent {\bf Loss Function:} 
+We learn to minimize the cross entropy loss objective with the true distribution 
+
+$$
+\min_{\theta} \mathbb{E} \left[  \text{Loss} ; \theta) \right]
+$$
+
+We use the negative log likelihood as loss function (empirical), i.e.,
+\begin{align*}
+    \textrm{J}(\theta) &= - \frac{1}{T} log L(\theta) \\
+    &= - \frac{1}{T} log \left(\prod_{t = 1}^{T} \prod_{-m \leq j \leq m, j \neq 0} P(w_{t+j} | w_t; \theta)\right) \\
+    &= - \frac{1}{T} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta)
+\end{align*}
+
+we can learn the parameters $\theta$ by minimizing the loss, ie maximizing the likelihood of the context words given the center words.\\
+
+\noindent {\bf Objective :} find word representations that are useful for predicting the surrounding words in a sentence or a document  by minimizing the loss function $\textrm{J}(\theta)$ , hence maximizing the likelihood of the context words given the center words.
+\begin{align*}
+    \min_{\theta} & \quad \textrm{J}(\theta) \\
+    \max_{\theta} & \frac{1}{T} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta)
+\end{align*}
+
+\noindent where, 
+$w_t$ is the center word, 
+$w_{t+j}$ is the context word, 
+$m$ is the context window size, 
+$T$ is the total number of words in the corpus,
+$\theta$ are the parameters of the model and
+
+
+The probability $p(w_{t+j} | w_t; \theta)$ is computed using the softmax function (in basic Skip gram model) as 
+$$ 
+    p(w_{t+j} | w_t; \theta) = \frac{e^{v_{w_{t+j}}^T v_{w_t}}}{\sum_{w=1}^{\mathbb{v}} e^{v_{w}^T v_{w_t}}} 
+$$
+\noindent where 
+$v_{w_t}$ is the vector representation of the center word $w_t$, $v_{w_{t+j}}$ is the vector representation of the context word $w_{t+j}$, and $\mathbb{v}$ is the size of the vocabulary.\\
+
+\noindent [{ \it Notation note : I am using \textbf{claim} notation to show some interpretation and facts, but are not mathematical claims. } ]
+
+\clm{softmax function interpretation}{}{
+    we need similarity between the center word and context word vectors to be high, and as cosine similarity is a measure of similarity between two non-zero vectors, we can use the dot product of the two vectors as a measure of similarity.
+    \begin{align*}
+        \text{cosine similarity}(a,b) &= \frac{a \cdot b}{\|a\| \|b\|} \\
+        \text{similarity}(a,b) & \propto a \cdot b \\
+        \text{similarity}(v_{w_{t+j}}, v_{w_t}) &= v_{w_{t+j}}^T v_{w_t} 
+    \end{align*} 
+    and we normalize the similarity scores, thus
+    $$ p(w_{t+j} | w_t; \theta) = \frac{e^{v_{w_{t+j}}^T v_{w_t}}}{\sum_{w=1}^{\mathbb{v}} e^{v_{w}^T v_{w_t}}} $$
+
+    where, $v_{w_t}$ is the vector representation of the center word $w_t$, $v_{w_{t+j}}$ is the vector representation of the context word $w_{t+j}$, and $\mathbb{v}$ is the size of the vocabulary.
+    
+}
+
+It can be interpreted as the probability of the context (outer) word (o)  given the center word (c) is proportional to the similarity between the two word vectors.\\
+
+$$
+    p(o|c) = \frac{e^{u_o^T v_c}}{\sum_{w \in \mathbb{v}} e^{u_w^T v_c}}
+$$
+
+where parameters are 
+$$
+    \theta = \left[ \begin{matrix} V \\ U \end{matrix} \right] \in \mathbb{R}^{(2\mathbb{v}) \times d} 
+$$
+where, $V$ is the matrix of center word vectors and $U$ is the matrix of context word vectors, $V, U \in \mathbb{R}^{\mathbb{v} \times d }$ .\\
+
+\subsection*{Derivative of the loss function}
+
+The partial derivative of the loss function with respect to the center word vector $v_{c}$ is given by
+\begin{align*}
+    \frac{\partial J(\theta)}{\partial v_{c}} &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( \frac{\partial}{\partial v_{c}} \log p(w_o | w_c; \theta) \right) \\
+    &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( \frac{\partial}{\partial v_{c}} \log \frac{e^{u_o^T v_c}}{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c}} \right) \\
+    &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( \frac{\partial}{\partial v_{c}} \left( u_o^T v_c - \log \sum_{w \in \mathbb{v}} e^{v_{w}^T v_c} \right) \right) \\
+    &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( u_o - \frac{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c} u_w}{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c}} \right)
+\end{align*}
+
+
+rewriting, 
+\begin{align*}
+    \frac{\partial J(\theta)}{\partial v_{c}} &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( u_o - \frac{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c} u_w}{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c}} \right) \\
+    &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( u_o - \sum_{w \in \mathbb{v}} \left(\frac{ e^{v_{w}^T v_c} }{\sum_{w \in \mathbb{v}} e^{v_{w}^T v_c}}\right) u_w \right) \\
+    &= - \frac{1}{T} \sum_{c \in \mathbb{v}} \sum_{o \in \text{outer}} \left( u_o - \sum_{w \in \mathbb{v}} p(o|c) u_w \right) \\
+\end{align*}
+{\bf interpretation :} The derivative of the loss function with respect to the center word vector $v_{c}$ is the difference between {\it observed context word vectors} ( $\displaystyle u_o$ ) and the {\it expectation of context word vectors} $\left( \displaystyle \sum_{w \in \mathbb{v}} p(o|c) \cdot u_w \right)$.\\
+
+\nt{The above softmax function is computationally expensive to compute, as it involves computing the exponential of the dot product of the center word and context word vectors for all words in the vocabulary.
+
+$$\text{Complexity}: O(\mathbb{v})$$
+
+}
+
+\noindent [{ \it Notation note : I am using \textbf{claim} notation to show the results form papers form now on, but are not mathematical claims. } ]
+
+\clm{Skip-gram model Results \cite{NIPS2013_9aa42b31}}{}{
+    evaluating the Hierarchical Softmax (HS), Noise Contrastive Estimation(NCE), Negative Sampling (NS), and sub-sampling of the training words resulted :
+
+    \begin{itemize}
+        \item Negative Sampling outperforms the Hierarchical Softmax and has even slightly better performance than the Noise Contrastive Estimation.
+        \item Sub-sampling of the training words  improves the training speed several times and makes the word representations significantly more accurate.
+    \end{itemize}
+
+}
+
+\subsection{Negative Sampling}
+\dfn{NEG Sampling}{
+    Negative Sampling is a technique used to approximate the softmax function in the Skip-gram model. 
+    Instead of computing the probability of all words in the vocabulary, Negative Sampling samples a 
+    small number of negative examples (words that are not in the context) and computes the probability 
+    of the context word given the center word and the negative examples. \\
+
+    % The objective of Negative Sampling is to maximize the probability of the context word given the center word and minimize the probability of the negative examples given the center word.\\
+    
+    {\bf Objective : } To distinguish the context words from the negative examples.
+
+    $$\text{NEG} = \log p(w_{t+j} | w_t; \theta) + k \mathbb{E}_{w \sim P_n(w)} \left[ \log p(w | w_t; \theta) \right] $$ 
+    where, 
+        $k$ is the number of negative samples,
+        $P_n(w)$ is the noise distribution, and 
+        $\mathbb{E}_{w \sim P_n(w)}$ is the expectation over the noise distribution.
+    
+    which replaces every $log p(w_{t+j} | w_t; \theta)$ term in the loss function with the NEG term for Negative Sampling.
+    
+    \begin{align*}
+        \max_{\theta} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta) + k \mathbb{E}_{w \sim P_n(w)} \left[ \log p(w | w_t; \theta) \right]
+    \end{align*}
+
+}
+\clm{Negative Sampling \cite{NIPS2013_9aa42b31}}{}{
+    \begin{itemize}
+        \item Best $k$ is observed to be 5-20 for small datasets and 2-5 for large datasets.\\
+        \item The noise distribution $P_n(w)$ is chosen to be the unigram distribution raised to the power of $\frac{3}{4}$ (0.75).
+        $$ P_n(w) \sim U(w)^{\frac{3}{4}} $$
+    \end{itemize}
+}
+
+\subsection{Skip gram with Negative Sampling}
+
+The equation $$\text{arg}\max_{\theta} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta) + k \mathbb{E}_{w \sim P_n(w)} \left[ \log p(w | w_t; \theta) \right]$$ can also be written as
+\begin{align*}
+    \text{arg}\max_{\theta} & \prod_{c,o \in D} P(D = 1 | c, o; \theta) \prod_{c,n \in D} P(D = 0 | c, n; \theta) \\
+    \text{arg}\max_{\theta} & \prod_{c,o \in D} \sigma(v_c^T v_o) \prod_{c,n \in D} (1- \sigma(v_c^T v_n)) \\
+    \text{arg}\max_{\theta} & \sum_{c,o \in D} \log(\sigma(v_c^T v_o))  + \sum_{c,n \in D} \log(\sigma(-v_c^T v_n))
+\end{align*}
+
+\subsection{After training skip gram models}
+
+After training the Skip-gram model, we can use the word vectors to compute the similarity between words. 
+The similarity between two words can be computed using 
+\begin{itemize}
+    \item Euclidean distance
+        \begin{align*}
+            \text{similarity} &= \frac{1}{1 + \text{Euclidean distance}}\\
+            &= \frac{1}{1 + \|v_1 - v_2\|}
+        \end{align*}
+    \item Cosine similarity
+        \begin{align*}
+            \text{similarity} &= \cos(\theta) = \frac{v_1 \cdot v_2}{||v_1|| \cdot ||v_2||}
+        \end{align*}
+\end{itemize}
+where $\|\cdot\|$ is Euclidean distance , for a vector $v \in \mathbb{R}^n$ , Euclidean distance is given by 
+$$  
+    \|v\| = \sqrt{v_1^2 + v_2^2 + \ldots + v_n^2} 
+$$
+
+\subsection{Word2vec implementation}
+
+There are several libraries available to train Word2vec models. Some of the popular libraries are:
+\begin{itemize}
+    \item Gensim
+    \item TensorFlow
+    \item PyTorch
+    \item FastText
+    \item spaCy
+    \item NLTK
+    \item GloVe
+\end{itemize}
+
+the experiments are done based on gensim model : word2vec-google-news-300 model.
+which is trained on Google News data, and contains 300-dimensional word vectors for a vocabulary of 3 million words and phrases.
+
+\subsection{Results}
+Some of the Analogies are observed by perfoming vector operations on the word vectors, for instance 
+$$
+    \text{vec('king')} - \text{vec('man')} + \text{vec('queen')} \approx \text{vec('woman')}
+$$
+
+for some of the analogies the most similar words (based on cosine similarity score) to the vector examples are listed below :
+
+\begin{itemize}
+    \item {\bf king : man :: queen : } \underline{ woman }
+    \item {\bf Paris : France :: Tokyo : } \underline{ Japan }
+    \item {\bf India : Rupee :: USA : } \underline{ Dollar }
+    \item {\bf India : Cricket :: USA : } \underline{ Baseball }
+\end{itemize}
+
+Addition of vectors is also observed to have some meaning, for instance
+$$
+    \text{vec('India')} + \text{vec('capital')} \approx \text{vec('Delhi')}
+$$
+
+some examples of vector addition are :
+\begin{itemize}
+    \item {\bf India + Capital = } \underline{ Delhi }
+    \item {\bf Japan + Sushi = } \underline{ Tokyo }
+    \item {\bf India + Cricket = } \underline{ Sachin }
+    \item {\bf USA + Baseball = } \underline{ Yankees }
+\end{itemize}
+
+
+
+\section{Word2vec - Bag of Words model}
+
+The Bag of Words (BoW) model is a simple model used to represent text data. The BoW model represents a document as a bag of words, ignoring the order of words in the document. 
+The BoW model is used to represent text data in the form of a vector, where each element of the vector represents the frequency of a word in the document.
+
+\subsection{BoW model} 
