@@ -185,7 +185,7 @@ cython_debug/
 
 *.latex*
 .vscode
-/notes/lec_template
+/notes/reference
 
 /notes/lec01/data/twitter/testdata*
 /notes/lec01/data/twitter/training*
