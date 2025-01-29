@@ -190,6 +190,8 @@ cython_debug/
 /notes/lec01/data/twitter/testdata*
 /notes/lec01/data/twitter/training*
 
+/notes/lec02/data
+
 *.cph*
 
 papers
