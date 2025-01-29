@@ -220,23 +220,23 @@ for some of the analogies the most similar words (based on cosine similarity sco
 
 \begin{itemize}
     \item {\bf king : man :: queen : } \underline{ woman }
-    \item {\bf Paris : France :: Tokyo : } \underline{ Japan }
-    \item {\bf India : Rupee :: USA : } \underline{ Dollar }
-    \item {\bf India : Cricket :: USA : } \underline{ Baseball }
+    \item {\bf paris : france :: tokyo : } \underline{ japan }
+    \item {\bf usa : dollar :: india : } \underline{ rupee }
+    \item {\bf usa : english :: india : } \underline{ hindi }
 \end{itemize}
 
-Addition of vectors is also observed to have some meaning, for instance
-$$
-    \text{vec('India')} + \text{vec('capital')} \approx \text{vec('Delhi')}
-$$
+% Addition of vectors is also observed to have some meaning, for instance
+% $$
+%     \text{vec('India')} + \text{vec('capital')} \approx \text{vec('Delhi')}
+% $$
 
-some examples of vector addition are :
-\begin{itemize}
-    \item {\bf India + Capital = } \underline{ Delhi }
-    \item {\bf Japan + Sushi = } \underline{ Tokyo }
-    \item {\bf India + Cricket = } \underline{ Sachin }
-    \item {\bf USA + Baseball = } \underline{ Yankees }
-\end{itemize}
+% some examples of vector addition are :
+% \begin{itemize}
+%     \item {\bf India + Capital = } \underline{ Delhi }
+%     \item {\bf Japan + Sushi = } \underline{ Tokyo }
+%     \item {\bf India + Cricket = } \underline{ Sachin }
+%     \item {\bf USA + Baseball = } \underline{ Yankees }
+% \end{itemize}
 
 
 
@@ -246,3 +246,17 @@ The Bag of Words (BoW) model is a simple model used to represent text data. The 
 The BoW model is used to represent text data in the form of a vector, where each element of the vector represents the frequency of a word in the document.
 
 \subsection{BoW model} 
+
+$$
+    \text{BoW} = \left[ \begin{matrix} f(w_1) \\ f(w_2) \\ \vdots \\ f(w_n) \end{matrix} \right]
+$$
+
+where, $f(w_i)$ is the frequency of the word $w_i$ in the document.\\
+
+We can use the BoW model to represent a document as a vector, where each element of the vector represents the frequency of a word in the document. The BoW model can be used in text classification, sentiment analysis, etc. which is not a good model for capturing the semantics of words.
+It is a simple model that ignores the order of words in the document.
+
+\section{GloVe model}
+
+The GloVe (Global Vectors for Word Representation) model is a model used to learn word embeddings. The GloVe model is trained on a large corpus of text data and learns to predict the context of a word given its neighboring words. 
+The GloVe model is trained using the co-occurrence matrix of words in the corpus.
