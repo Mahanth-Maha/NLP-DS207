@@ -196,3 +196,11 @@ cython_debug/
 
 papers
 
+notes/datasets/twitterSentiment/training.1600000.processed.noemoticon.csv
+notes/datasets/twitterSentiment/train.csv
+notes/datasets/twitterSentiment/testdata.manual.2009.06.14.csv
+notes/datasets/twitterSentiment/test.csv
+notes/datasets/NewsArticlesCategories/news-article-categories.csv
+notes/datasets/IndianNewsHeadlines/india-news-headlines.csv
+notes/datasets/Ecommerce/ecommerceDataset.csv
+notes/datasets/NewsCategoryDataset/News_Category_Dataset_v3.json

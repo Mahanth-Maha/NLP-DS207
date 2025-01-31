@@ -167,7 +167,12 @@ $$\text{Complexity}: O(\mathbb{v})$$
 
 \subsection{Skip gram with Negative Sampling}
 
-The equation $$\text{arg}\max_{\theta} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta) + k \mathbb{E}_{w \sim P_n(w)} \left[ \log p(w | w_t; \theta) \right]$$ can also be written as
+In Skip gram, we now use sigmoid function to compute the probability of the context word given the center word and the negative examples. The probability of the context word given the center word is given by
+
+$$\text{arg}\max_{\theta} \sum_{t=1}^{T} \sum_{-m \leq j \leq m, j \neq 0} \log p(w_{t+j} | w_t; \theta) + k \mathbb{E}_{w \sim P_n(w)} \left[ \log p(w | w_t; \theta) \right]$$ 
+
+now can be written as
+
 \begin{align*}
     \text{arg}\max_{\theta} & \prod_{c,o \in D} P(D = 1 | c, o; \theta) \prod_{c,n \in D} P(D = 0 | c, n; \theta) \\
     \text{arg}\max_{\theta} & \prod_{c,o \in D} \sigma(v_c^T v_o) \prod_{c,n \in D} (1- \sigma(v_c^T v_n)) \\
@@ -245,7 +250,7 @@ for some of the analogies the most similar words (based on cosine similarity sco
 The Bag of Words (BoW) model is a simple model used to represent text data. The BoW model represents a document as a bag of words, ignoring the order of words in the document. 
 The BoW model is used to represent text data in the form of a vector, where each element of the vector represents the frequency of a word in the document.
 
-\subsection{BoW model} 
+\subsection*{BoW model} 
 
 $$
     \text{BoW} = \left[ \begin{matrix} f(w_1) \\ f(w_2) \\ \vdots \\ f(w_n) \end{matrix} \right]
@@ -256,7 +261,43 @@ where, $f(w_i)$ is the frequency of the word $w_i$ in the document.\\
 We can use the BoW model to represent a document as a vector, where each element of the vector represents the frequency of a word in the document. The BoW model can be used in text classification, sentiment analysis, etc. which is not a good model for capturing the semantics of words.
 It is a simple model that ignores the order of words in the document.
 
-\section{GloVe model}
+\section{Word2vec - GloVe model}
 
 The GloVe (Global Vectors for Word Representation) model is a model used to learn word embeddings. The GloVe model is trained on a large corpus of text data and learns to predict the context of a word given its neighboring words. 
 The GloVe model is trained using the co-occurrence matrix of words in the corpus.
+
+GloVe focused more on ratio of probabilities of co-occurrence of words, rather than the probabilities themselves. 
+They used {\bf log-bilinear} regression model to learn the word vectors, 
+
+$$ w_i \cdot \tilde{w}_j = \log P(i|j) $$
+
+where, $w_i$ is the vector representation of word $i$, $\tilde{w}_j$ is the vector representation of word $j$, $b_i$ and $\tilde{b}_j$ are the biases for words $i$ and $j$, and $P_{ij}$ is the probability of word $j$ appearing in the context of word $i$.\\
+
+\noindent {\bf Objective function:}
+
+$$
+    \sum_{i=1}^{\mathbb{v}} \sum_{j=1}^{\mathbb{v}} f(X_{ij}) (w_i^T \tilde{w}_j + b_i + \tilde{b}_j - \log X_{ij})^2
+$$
+
+where, $X_{ij}$ is the number of times word $j$ appears in the context of word $i$, $f(X_{ij})$ is the weighting function, and $\mathbb{v}$ is the size of the vocabulary.
+
+\section{Classification}
+
+Word representations are used in text classification tasks to represent text data as vectors.
+Even linear models like Logistic Regression can be used to classify text data using word representations, which yields good results. 
+
+\ex{Logistic Regression Text classification}{
+    Using gensim-300-dimension word representations, we can get vector representation of a sentance by averaging the word vectors of the words in the sentence as 
+    $$
+        \text{vec(sentence)} = \frac{1}{n} \sum_{i=1}^{n} \text{vec}(\text{word}_i)
+    $$
+    where, $n$ is the number of words in the sentence.
+
+    The vector representation of the sentence can be used as input to a Logistic Regression model to classify the text data. \\
+    
+    On implementing Logistic Regression on Ecommerce dataset, the model achieved an accuracy of $92.92$\%.
+    (see \href{/lec02/lec_02_WordRepresentations.ipynb}{notebook} for implementation details.)
+}
+
+
+Thus, Word representations can be used to represent text data as vectors, which can be used as input to machine learning models like Logistic Regression for text classification, which captures the semantics of words and yields good results.
